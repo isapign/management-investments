@@ -3,6 +3,7 @@ package br.com.alura.wallet.servlet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -19,17 +20,36 @@ import br.com.alura.wallet.model.TransactionType;
 public class TransactionsServlet extends HttpServlet {
 	
 	private List<Transaction> transactions = new ArrayList<>();
-
+	
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Transaction t1 = new Transaction("XPTO12", new BigDecimal("12"), 200, LocalDate.now(), TransactionType.SALE);
-		Transaction t2 = new Transaction("IA2HD", new BigDecimal("120.07"), 6, LocalDate.now(), TransactionType.PURCHASE);
-		
-		transactions.add(t1);
-		transactions.add(t2);
-		
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {		
 		req.setAttribute("transactions", transactions);
 		
 		req.getRequestDispatcher("WEB-INF/jsp/transactions.jsp").forward(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		try {
+			String ticker = req.getParameter("ticker");
+			LocalDate date = LocalDate.parse(req.getParameter("date"), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+			BigDecimal price = new BigDecimal(req.getParameter("price").replace(",", "."));
+			int quantity = Integer.parseInt(req.getParameter("quantity"));
+			TransactionType type = TransactionType.valueOf(req.getParameter("type"));
+
+			Transaction transaction = new Transaction(
+					ticker,
+					price,
+					quantity,
+					date,
+					type
+			);
+			transactions.add(transaction);
+			
+			resp.sendRedirect("transactions");
+		} catch (NumberFormatException e) {
+			resp.sendRedirect("transactions?error=wrong format fields");
+		}
 	}
 }
