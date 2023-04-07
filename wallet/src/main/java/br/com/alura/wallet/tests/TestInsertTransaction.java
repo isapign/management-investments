@@ -1,16 +1,15 @@
 package br.com.alura.wallet.tests;
 
+import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import br.com.alura.wallet.dao.TransactionDao;
 import br.com.alura.wallet.model.Transaction;
 import br.com.alura.wallet.model.TransactionType;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
 
 public class TestInsertTransaction {
 
@@ -20,25 +19,16 @@ public class TestInsertTransaction {
 		String password = "317717";
 		
 		Connection connection = DriverManager.getConnection(url, user, password);
-
-		Transaction t = new Transaction(
-				"DFASD12",
-				new BigDecimal("12.89"),
-				15, 
-				LocalDate.of(2023, 04, 01),
-				TransactionType.SALE
-		);
+		TransactionDao dao = new TransactionDao(connection);
 		
-		String insertCommand = "insert into transactions(ticker, price, quantity, date, type) values(?, ?, ?, ?, ?)";
-		
-		PreparedStatement ps = connection.prepareStatement(insertCommand);
-		ps.setString(1, t.getTicker());
-		ps.setBigDecimal(2, t.getPrice());
-		ps.setInt(3, t.getQuantity());
-		ps.setDate(4, Date.valueOf(t.getDate()));
-		ps.setString(5, t.getType().toString());
+		Transaction transaction = new Transaction(
+				"XPTO",
+				new BigDecimal("123.33"),
+				102,
+				LocalDate.now(),
+				TransactionType.PURCHASE
+			);
 
-		ps.execute();
+		dao.register(transaction);
 	}
 }
-
